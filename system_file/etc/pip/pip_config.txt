@@ -1,0 +1,78 @@
+import subprocess
+import sys
+import os
+import tarfile
+import zipfile
+import requests
+
+def download_package(package_name):
+    """Download the specified package from PyPI."""
+    url = f"https://pypi.org/pypi/{package_name}/json"
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Failed to fetch package {package_name} metadata: {response.status_code}")
+        sys.exit(1)
+    
+    data = response.json()
+    releases = data["releases"]
+    latest_version = max(releases, key=lambda v: tuple(map(int, v.split('.'))))
+    package_info = releases[latest_version][0]
+    download_url = package_info["url"]
+    
+    response = requests.get(download_url)
+    if response.status_code != 200:
+        print(f"Failed to download package {package_name}: {response.status_code}")
+        sys.exit(1)
+    
+    filename = download_url.split("/")[-1]
+    with open(filename, "wb") as f:
+        f.write(response.content)
+    
+    return filename
+
+def install_package(filename):
+    """Install the package from the given file."""
+    if filename.endswith(".tar.gz") or filename.endswith(".tar.bz2"):
+        with tarfile.open(filename) as tar:
+            tar.extractall()
+            extracted_dir = tar.getnames()[0]
+    elif filename.endswith(".zip"):
+        with zipfile.ZipFile(filename, "r") as zip_ref:
+            zip_ref.extractall()
+            extracted_dir = zip_ref.namelist()[0]
+    else:
+        print("Unsupported file format")
+        sys.exit(1)
+    
+    os.chdir(extracted_dir)
+    subprocess.check_call([sys.executable, "setup.py", "install"])
+
+def run_package(package_name):
+    """Run the specified package."""
+    try:
+        subprocess.check_call([sys.executable, "-m", package_name])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to run package {package_name}: {e}")
+        sys.exit(1)
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: pip install <package_name>")
+        print("   or: pip <package_name>")
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "install":
+        if len(sys.argv) != 3:
+            print("Usage: pip install <package_name>")
+            sys.exit(1)
+        package_name = sys.argv[2]
+        filename = download_package(package_name)
+        install_package(filename)
+    else:
+        package_name = command
+        run_package(package_name)
+
+if __name__ == "__main__":
+    main()

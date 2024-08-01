@@ -1,0 +1,22 @@
+import os
+import shutil
+import sys
+
+def remove(path):
+    """Remove a file or directory."""
+    if os.path.isfile(path):
+        os.remove(path)
+        print(f"File {path} has been deleted.")
+    elif os.path.isdir(path):
+        shutil.rmtree(path)
+        print(f"Directory {path} and all its contents have been deleted.")
+    else:
+        print(f"The path {path} does not exist.")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python rm.py <path>")
+        sys.exit(1)
+
+    path_to_remove = sys.argv[1]
+    remove(path_to_remove)

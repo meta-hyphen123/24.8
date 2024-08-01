@@ -1,0 +1,31 @@
+import os
+
+# 假设 tools.py 模块定义了所有的工具及其相关命令
+import tools
+
+def execute_run_command(tool_name):
+    tool_classes = {getattr(cls, 'TITLE', '').lower(): cls for cls in tools.__dict__.values() if isinstance(cls, type)}
+    tool_class = tool_classes.get(tool_name.lower())
+
+    if tool_class and is_tool_installed(tool_name):
+        commands = tool_class.RUN_COMMANDS
+        for command in commands:
+            print(f"Executing run command: {command}")
+            os.system(command)
+    else:
+        print(f"The tool '{tool_name}' is not installed or not found. Please install it first.")
+
+def is_tool_installed(tool_name):
+    # 读取已安装工具的列表
+    if os.path.exists('installed_tools.txt'):
+        with open('installed_tools.txt', 'r') as f:
+            installed_tools = f.read().splitlines()
+        return tool_name.lower() in (tool.lower() for tool in installed_tools)
+    return False
+
+def main():
+    tool_name = input("请输入你想运行的工具名称：")
+    execute_run_command(tool_name)
+
+if __name__ == "__main__":
+    main()

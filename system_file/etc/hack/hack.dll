@@ -1,0 +1,73 @@
+import sys
+import os
+import re
+from colorama import Fore, Back
+import tools
+
+shiter_path = os.path.dirname(os.path.abspath(__file__))
+os.chdir(shiter_path)
+def list_installed_tools():
+    if os.path.exists('installed_tools.txt'):
+        with open('installed_tools.txt', 'r') as f:
+            tools = f.read().splitlines()
+        return tools
+    return []
+def execute_command(tool_name, command_type):
+    tool_classes = {getattr(cls, 'TITLE', '').lower(): cls for cls in tools.__dict__.values() if isinstance(cls, type)}
+    tool_class = tool_classes.get(tool_name.lower())
+
+    if tool_class:
+        if command_type == 'run' and not is_tool_installed(tool_name):
+            text = f"The tool '{tool_name}' is not recognized. Check the spelling or if a path was included, verify that the path is correct and try again."
+            print(f"{Fore.RED}{text}")
+            return
+
+        commands = tool_class.INSTALL_COMMANDS if command_type == 'install' else tool_class.RUN_COMMANDS
+
+        for command in commands:
+            print(f"Executing {command_type} command: {command}")
+            os.system(command)
+        if command_type == 'list':
+            installed_tools = list_installed_tools()
+            if installed_tools:
+                print("Installed tools:")
+                for tool in installed_tools:
+                    print(f" - {tool}")
+            else:
+                print("No tools installed.")
+
+        if command_type == 'install':
+            mark_tool_as_installed(tool_name)
+    else:
+            text = f"The command '{tool_name}' is not recognized. Check the spelling or if a path was included, verify that the path is correct and try again."
+            print(f"{Fore.RED}{text}")
+
+def mark_tool_as_installed(tool_name):
+    with open('installed_tools.txt', 'a') as f:
+        f.write(f"{tool_name}\n")
+
+def is_tool_installed(tool_name):
+    installed_tools = list_installed_tools()
+    return tool_name.lower() in (tool.lower() for tool in installed_tools)
+
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 3:
+        print("Usage:shit [install|run] ToolName")
+        sys.exit(1)
+
+    command_type = sys.argv[1]
+    tool_name = sys.argv[2]
+
+    if command_type == 'list':
+        installed_tools = list_installed_tools()
+        if installed_tools:
+            print("Installed tools:")
+            for tool in installed_tools:
+                print(f" - {tool}")
+        else:
+            print("No tools installed.")
+    else:
+        execute_command(tool_name, command_type)
