@@ -1,0 +1,56 @@
+import os
+import subprocess
+import sys
+from colorama import Fore, Back
+# Constants
+PROMPT = "sploit> "
+ERROR_COLOR = "\033[91m"
+RESET_COLOR = "\033[0m"
+
+# Functions
+def run_command(command):
+    try:
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        return output.decode("utf-8")
+    except subprocess.CalledProcessError as e:
+        return f"{ERROR_COLOR}Error: {e.output.decode('utf-8')}{RESET_COLOR}"
+
+def cmd_ls(args):
+    return run_command("ls " + args)
+
+def cmd_pwd(args):
+    return run_command("pwd")
+
+def cmd_cat(args):
+    return run_command("cat " + args)
+
+def cmd_exit(args):
+    sys.exit(0)
+
+# Command mapping
+commands = {
+    "ls": cmd_ls,
+    "pwd": cmd_pwd,
+    "cat": cmd_cat,
+    "exit": cmd_exit
+}
+
+# Main loop
+def main():
+    while True:
+        try:
+            user_input = input(PROMPT)
+            if user_input.strip():
+                parts = user_input.split()
+                cmd = parts[0]
+                args = " ".join(parts[1:])
+                if cmd in commands:
+                    print(commands[cmd](args))
+                else:
+                    print(f"{ERROR_COLOR}Command not found{RESET_COLOR}")
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            sys.exit(0)
+
+if __name__ == "__main__":
+    main()

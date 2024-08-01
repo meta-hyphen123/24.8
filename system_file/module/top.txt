@@ -1,0 +1,45 @@
+import psutil
+import time
+import sys
+from operator import itemgetter
+
+def get_system_info():
+    cpu_usage = psutil.cpu_percent(interval=1)
+    memory = psutil.virtual_memory()
+    memory_usage = memory.percent
+    return cpu_usage, memory_usage
+
+def print_header():
+    print(f"{'CPU Usage':>10} {'Memory Usage':>15} {'Process Name':<25} {'PID':<10} {'Threads':<10} {'User Time':<10} {'System Time':<10}")
+
+def print_process(process):
+    try:
+        cpu = process.cpu_percent(interval=1)
+        memory = process.memory_info().rss / 1024 / 1024  # Memory usage in MB
+        name = process.name()
+        pid = process.pid
+        threads = process.num_threads()
+        user_time = process.cpu_times().user
+        system_time = process.cpu_times().system
+        print(f"{cpu:>10.2f}% {memory_usage:>15.2f}% {name:<25} {pid:<10} {threads:<10} {user_time:<10.2f} {system_time:<10.2f}")
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        pass
+
+def main():
+    print("Press 'q' to quit")
+    try:
+        while True:
+            print_header()
+            # Sort processes by CPU usage
+            for proc in sorted(psutil.process_iter(['pid', 'name', 'memory_info', 'cpu_times', 'num_threads']), key=itemgetter(3), reverse=True):
+                print_process(proc)
+            print()
+            time.sleep(1)
+            input("Press Enter to refresh... ")
+    except KeyboardInterrupt:
+        print("\nExiting program.")
+    except EOFError:
+        print("\nExiting program.")
+
+if __name__ == "__main__":
+    main()
