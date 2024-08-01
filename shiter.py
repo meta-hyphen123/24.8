@@ -8,11 +8,11 @@ import requests
 import glob
 import colorama
 from colorama import Fore, Back
-from system_files.prompt.prompt import *
+from system_file.prompt.prompt import *
 import os
 
 # 假设 tools.py 模块定义了所有的工具及其相关命令
-import system_files.etc.hack.tools
+import system_file.etc.hack.tools
 
 
 
@@ -46,9 +46,9 @@ white = '\033[37m'
 
 # Determine script path
 shiter_path = os.path.dirname(os.path.abspath(__file__))
-system_files = os.path.join(shiter_path, 'system_files')
-etc = os.path.join(system_files, 'etc')
-module = os.path.join(system_files, 'module')
+system_file = os.path.join(shiter_path, 'system_file')
+etc = os.path.join(system_file, 'etc')
+module = os.path.join(system_file, 'module')
 hack = os.path.join(etc, 'hack')
 pip = os.path.join(etc, 'pip')
 wget = os.path.join(etc, 'wget')
@@ -228,7 +228,7 @@ def main():
     # Initial directory setup
     os.chdir(user)
     working_dir = os.getcwd()
-    os.chdir(system_files)
+    os.chdir(system_file)
     
     username = "shiter"
     hostname = "shiter"
@@ -391,7 +391,7 @@ def main():
 if __name__ == "__main__":
     commands = []
     os.chdir(shiter_path)
-    if os.path.exists("system_files"):
+    if os.path.exists("system_file"):
         main()
     else:
         exit()
